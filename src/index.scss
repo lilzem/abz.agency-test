@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap');
+
+:root {
+    --main-white: rgba(255, 255, 255, 1);
+    --main-gray: #f8f8f8;
+    --main-font: 'Nunito';
+    --main-yellow: rgba(244, 224, 65, 1);
+    --main-black: rgba(0, 0, 0, 0.87);
+    --hover-yellow: rgba(255, 227, 2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--main-gray);
+}
