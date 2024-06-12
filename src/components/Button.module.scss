@@ -11,7 +11,12 @@
     cursor: pointer;
     transition: 0.3s linear ease-in-out;
 
-    &:hover {
+    &:disabled {
+        background-color: rgba(180, 180, 180, 1);
+        color: var(--main-white);
+    }
+
+    &:not(:disabled):hover {
         background-color: var(--hover-yellow);
     }
 }
