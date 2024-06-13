@@ -11,10 +11,12 @@ import Button from './components/Button';
 import Card from './components/Card';
 import { User } from './interfaces/User';
 import { getPositions, getToken, getUsers } from './api/api';
-import { BACKEND_URL, NUMBER_REGEXP, USER_COUNT } from './constants';
+import { BACKEND_URL, LAST_PAGE, NUMBER_REGEXP, USER_COUNT } from './constants';
 import { Position } from './interfaces/Position';
 import Upload from './components/Upload';
 import { useMask } from '@react-input/mask';
+import Loader from './components/Loader';
+import Success from './components/Success';
 
 const App = () => {
     const usersRef = useRef<HTMLDivElement | null>(null);
@@ -25,6 +27,7 @@ const App = () => {
     const [users, setUsers] = useState<Array<User>>([]);
     const [page, setPage] = useState<number>(1);
     const [file, setFile] = useState<any>(null);
+    const [success, setSuccess] = useState<boolean>(false);
     const [positions, setPositions] = useState<Array<Position>>([]);
 
     const validationSchema = Yup.object({
@@ -49,13 +52,17 @@ const App = () => {
         console.log(token.token);
 
         try {
-            axios.post(`${BACKEND_URL}/users`, formData, {
+            const response = await axios.post(`${BACKEND_URL}/users`, formData, {
                 headers: {
                     Token: token.token,
                 },
             });
 
-            fetchUsers(1);
+            if (response.data.success) {
+                setSuccess(true);
+                setPage(1);
+                fetchUsers(page);
+            }
         } catch (err) {
             console.log(err);
         } finally {
@@ -148,104 +155,115 @@ const App = () => {
                     <h1>Working with GET request</h1>
 
                     <div className={styles.card_list}>
-                        {isLoading ? 'Loading....' : users.map((user) => <Card key={user.id} {...user} />)}
+                        {users.map((user) => (
+                            <Card key={user.id} {...user} />
+                        ))}
                     </div>
-
-                    <Button text="Show more" style={{ margin: '0 auto' }} onClick={usersPaginate} />
+                    {isLoading ? (
+                        <Loader />
+                    ) : (
+                        page < LAST_PAGE && (
+                            <Button text="Show more" style={{ margin: '0 auto' }} onClick={usersPaginate} />
+                        )
+                    )}
                 </div>
 
-                <div className={styles.post_block} ref={signUpRef}>
-                    <h1>Working with POST request</h1>
-                    <Formik
-                        initialValues={{
-                            name: '',
-                            email: '',
-                            phone: '',
-                            position: '',
-                        }}
-                        validationSchema={validationSchema}
-                        onSubmit={handleSubmit}
-                    >
-                        {({ values, handleChange, isSubmitting, errors, touched, handleBlur, dirty }) => (
-                            <Form>
-                                <div className={styles.input_wrapper}>
-                                    <TextField
-                                        label="Your name"
-                                        name="name"
-                                        value={values.name}
-                                        onChange={handleChange}
-                                        error={errors.name ? true : false}
-                                        helperText={errors.name && touched.name ? errors.name : ''}
-                                        onBlur={handleBlur}
-                                    />
-                                    <TextField
-                                        label="Email"
-                                        name="email"
-                                        value={values.email}
-                                        onChange={handleChange}
-                                        error={errors.email ? true : false}
-                                        helperText={errors.email ? errors.email : ''}
-                                        onBlur={handleBlur}
-                                    />
-                                    <TextField
-                                        inputRef={phoneInputRef}
-                                        label="Phone"
-                                        name="phone"
-                                        value={values.phone}
-                                        error={errors.phone && touched.name ? true : false}
-                                        onChange={handleChange}
-                                        helperText={
-                                            errors.phone && touched.name ? errors.phone : '+38(XXX) XXX - XX - XX'
+                {success ? (
+                    <Success />
+                ) : (
+                    <div className={styles.post_block} ref={signUpRef}>
+                        <h1>Working with POST request</h1>
+                        <Formik
+                            initialValues={{
+                                name: '',
+                                email: '',
+                                phone: '',
+                                position: '',
+                            }}
+                            validationSchema={validationSchema}
+                            onSubmit={handleSubmit}
+                        >
+                            {({ values, handleChange, errors, touched, handleBlur, status }) => (
+                                <Form>
+                                    <div className={styles.input_wrapper}>
+                                        <TextField
+                                            label="Your name"
+                                            name="name"
+                                            value={values.name}
+                                            onChange={handleChange}
+                                            error={errors.name ? true : false}
+                                            helperText={errors.name && touched.name ? errors.name : ''}
+                                            onBlur={handleBlur}
+                                        />
+                                        <TextField
+                                            label="Email"
+                                            name="email"
+                                            value={values.email}
+                                            onChange={handleChange}
+                                            error={errors.email ? true : false}
+                                            helperText={errors.email ? errors.email : ''}
+                                            onBlur={handleBlur}
+                                        />
+                                        <TextField
+                                            inputRef={phoneInputRef}
+                                            label="Phone"
+                                            name="phone"
+                                            value={values.phone}
+                                            error={errors.phone && touched.name ? true : false}
+                                            onChange={handleChange}
+                                            helperText={
+                                                errors.phone && touched.name ? errors.phone : '+38(XXX) XXX - XX - XX'
+                                            }
+                                            onBlur={handleBlur}
+                                        />
+                                    </div>
+
+                                    <div className={styles.radio_wrapper}>
+                                        <p>Select your position</p>
+
+                                        {positions.map((position: Position) => (
+                                            <div key={position.id} className={styles.radio}>
+                                                <Radio
+                                                    size="small"
+                                                    name="position"
+                                                    value={position.id}
+                                                    onChange={handleChange}
+                                                    checked={+values.position === position.id}
+                                                    sx={{
+                                                        '&.Mui-checked': {
+                                                            color: '#00BDD3',
+                                                        },
+                                                        '&': {
+                                                            color: '#D0CFCF',
+                                                        },
+                                                    }}
+                                                />
+                                                <p>{position.name}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <Upload file={file} setFile={setFile} />
+
+                                    <Button
+                                        disabled={
+                                            errors.email || errors.name || errors.phone || errors.position || !file
+                                                ? true
+                                                : false
                                         }
-                                        onBlur={handleBlur}
+                                        text="Sign up"
+                                        style={{
+                                            marginTop: '50px',
+                                            width: '100px',
+                                            marginLeft: 'auto',
+                                            margin: '50px auto 0',
+                                        }}
                                     />
-                                </div>
-
-                                <div className={styles.radio_wrapper}>
-                                    <p>Select your position</p>
-
-                                    {positions.map((position: Position) => (
-                                        <div key={position.id} className={styles.radio}>
-                                            <Radio
-                                                size="small"
-                                                name="position"
-                                                value={position.id}
-                                                onChange={handleChange}
-                                                checked={+values.position === position.id}
-                                                sx={{
-                                                    '&.Mui-checked': {
-                                                        color: '#00BDD3',
-                                                    },
-                                                    '&': {
-                                                        color: '#D0CFCF',
-                                                    },
-                                                }}
-                                            />{' '}
-                                            <p>{position.name}</p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <Upload file={file} setFile={setFile} />
-
-                                <Button
-                                    disabled={
-                                        errors.email || errors.name || errors.phone || errors.position || !file
-                                            ? true
-                                            : false
-                                    }
-                                    text="Sign up"
-                                    style={{
-                                        marginTop: '50px',
-                                        width: '100px',
-                                        marginLeft: 'auto',
-                                        margin: '50px auto 0',
-                                    }}
-                                />
-                            </Form>
-                        )}
-                    </Formik>
-                </div>
+                                </Form>
+                            )}
+                        </Formik>
+                    </div>
+                )}
             </main>
         </>
     );

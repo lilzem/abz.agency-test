@@ -20,10 +20,19 @@ header {
         background: var(--main-white);
         max-width: 1170px;
         margin: 0 auto;
+        gap: 14px;
 
         & > nav {
             display: flex;
             gap: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            padding: 13px 32px;
+        }
+
+        @media (max-width: 400px) {
+            padding: 13px 16px;
         }
     }
 }
@@ -51,9 +60,18 @@ p {
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
-    height: 650px;
-
     padding: 164px 0 163px 0;
+
+    @media (max-width: 800px) {
+        background-image: url('./assets/images/tablet-bg.png');
+        padding: 89px 0 88px 0;
+        max-height: 500px;
+    }
+
+    @media (max-width: 400px) {
+        background-image: url('./assets/images/mobile-bg.png');
+        padding: 40px 16px 70px 16px;
+    }
 
     .text_block {
         max-width: 380px;
@@ -85,8 +103,17 @@ p {
 
     .card_list {
         display: flex;
+        justify-content: center;
         gap: 29px;
         flex-wrap: wrap;
+    }
+
+    @media (max-width: 800px) {
+        padding: 0 32px;
+    }
+
+    @media (max-width: 400px) {
+        padding: 0 16px;
     }
 }
 
@@ -130,5 +157,13 @@ p {
                 margin-left: -9px;
             }
         }
+    }
+
+    @media (max-width: 800px) {
+        padding: 0 32px;
+    }
+
+    @media (max-width: 400px) {
+        padding: 0 16px;
     }
 }

@@ -1,6 +1,6 @@
 import styles from '@src/components/Upload.module.scss';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 type UploadProps = {
     file: any;
@@ -9,59 +9,48 @@ type UploadProps = {
 
 const Upload = ({ file, setFile }: UploadProps) => {
     const uploadRef = useRef<HTMLInputElement>(null);
-    const dropRef = useRef<HTMLDivElement>(null);
+
+    const [error, setError] = useState<boolean>(false);
 
     const upload = () => {
         uploadRef.current?.click();
     };
 
     const handleFileChange = (event: any) => {
-        setFile(event.target?.files[0]);
+        const path = event.target.value.split('.');
+        const extension = `${path[path.length - 1]}`;
+
+        if (extension == 'jpg' || extension == 'jpeg') {
+            setFile(event.target?.files[0]);
+        } else {
+            setError(true);
+            event.target.value = '';
+        }
     };
 
-    // const handleDragOver = (e: any) => {
-    //     e.preventDefault();
-    //     e.stopPropagation();
+    // const handleFileChange = (event: any) => {
+    //     setFile(event.target?.files[0]);
     // };
-
-    // const handledrop = (e: any) => {
-    //     e.preventDefault();
-    //     e.stopPropagation();
-
-    //     const { files } = e.dataTransfer;
-
-    //     if (files && files.length && (files[0].type === 'image/jpeg' || files[0].type === 'image/jpg')) {
-    //         setFile(files[0]);
-    //     } else {
-    //         setError(true);
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     dropRef.current?.addEventListener('dragover', handleDragOver);
-    //     dropRef.current?.addEventListener('dropRef', handledrop);
-
-    //     return () => {
-    //         dropRef.current?.removeEventListener('dragover', handleDragOver);
-    //         dropRef.current?.removeEventListener('dropRef', handledrop);
-    //     };
-    // }, []);
 
     return (
-        <div ref={dropRef} className={styles.container}>
-            <div className={styles.upload} onClick={upload}>
-                <p>Upload</p>
-                <input
-                    ref={uploadRef}
-                    onChange={handleFileChange}
-                    type="file"
-                    accept="image/jpeg, image/jpg"
-                    style={{ display: 'none' }}
-                />
+        <>
+            <div className={`${styles.container} ${error ? styles.error : ''}`}>
+                <div className={`${styles.upload} ${error ? styles.error : ''}`} onClick={upload}>
+                    <p>Upload</p>
+                    <input
+                        ref={uploadRef}
+                        onChange={handleFileChange}
+                        type="file"
+                        accept="image/jpeg, image/jpg"
+                        style={{ display: 'none' }}
+                    />
+                </div>
+
+                {file ? <p className={styles.filename}>{file.name}</p> : <p>Upload your photo</p>}
             </div>
 
-            {file ? <p className={styles.filename}>{file.name}</p> : <p>Upload your photo</p>}
-        </div>
+            {error && <p className={styles.error_text}>Wrong type of file, should be jpg/jpeg</p>}
+        </>
     );
 };
 
