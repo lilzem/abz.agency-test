@@ -30,6 +30,10 @@
             max-width: 304px;
         }
 
+        @media (max-width: 800px) {
+            max-width: 294px;
+        }
+
         @media (max-width: 400px) {
             max-width: 288px;
         }
